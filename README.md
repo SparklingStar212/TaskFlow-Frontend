@@ -1,16 +1,80 @@
-# React + Vite
+# TaskFlow
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+TaskFlow is a React task management app built with Vite. It includes authentication, task CRUD, search and filtering, task statistics, light and dark themes, and a responsive mobile modal for creating tasks.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Email and password authentication
+- Create, edit, delete, and update tasks
+- Status tracking for `To Do`, `In Progress`, and `Done`
+- Search and status filtering
+- Dark mode with persisted theme preference
+- Responsive layout with a mobile task modal
+- Backend-powered task and auth requests using axios
+- Form validation with Formik and Yup
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- Vite
+- axios
+- Formik
+- Yup
 
-## Expanding the ESLint configuration
+## Setup
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create a `.env` file in the project root if you want to override the default API URLs:
+
+```env
+VITE_TASKS_API_URL=https://your-backend.example.com/tasks
+VITE_AUTH_API_URL=https://your-backend.example.com
+```
+
+3. Start the development server:
+
+```bash
+npm run dev
+```
+
+## Scripts
+
+- `npm run dev` - start the local development server
+- `npm run build` - create a production build
+- `npm run preview` - preview the production build locally
+- `npm run lint` - run ESLint
+
+## Backend Contract
+
+TaskFlow expects a backend that supports these routes:
+
+- `POST /register`
+- `POST /login`
+- `GET /tasks`
+- `POST /tasks`
+- `PUT /tasks/:id`
+- `DELETE /tasks/:id`
+
+Tasks should use one of these status values:
+
+- `To Do`
+- `In Progress`
+- `Done`
+
+## Project Structure
+
+- `src/pages` - top-level screens
+- `src/components` - reusable UI pieces
+- `src/context` - auth and theme providers
+- `src/hooks` - task data logic
+- `src/global.css` - app-wide styling
+
+## Notes
+
+- The app stores the logged-in user and theme preference in local storage.
+- If the backend returns older task status values, the app normalizes them to the current enum.
