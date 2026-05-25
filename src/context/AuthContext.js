@@ -2,6 +2,7 @@ import axios from 'axios'
 import { createContext, createElement, useContext, useMemo, useState } from 'react'
 
 const STORAGE_KEY = 'taskflow_user'
+const TOKEN_KEY = 'taskflow_token'
 const AUTH_BASE_URL = import.meta.env.VITE_AUTH_API_URL
 const AuthContext = createContext(null)
 const authApi = axios.create({
@@ -29,8 +30,14 @@ const getInitialUser = () => {
   return storedUser ? JSON.parse(storedUser) : null
 }
 
+const getInitialToken = () => {
+  const storedToken = localStorage.getItem(TOKEN_KEY)
+  return storedToken || ''
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(getInitialUser)
+  const [token, setToken] = useState(getInitialToken)
 
   const login = async ({ email, password }) => {
     if (!email || !password) {
@@ -39,13 +46,20 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const response = await authApi.post('/login', { email, password })
-      const loggedUser = response.data?.user ?? response.data ?? {
-        id: email.toLowerCase(),
-        email,
-        name: email.split('@')[0],
+      const responseToken = response.data.token
+      const loggedUser = response.data.user
+
+      if (!responseToken) {
+        throw new Error('Authentication token was not returned by the server.')
       }
 
+      if (!loggedUser) {
+        throw new Error('User data was not returned by the server.')
+      }
+
+      localStorage.setItem(TOKEN_KEY, responseToken)
       localStorage.setItem(STORAGE_KEY, JSON.stringify(loggedUser))
+      setToken(responseToken)
       setUser(loggedUser)
     } catch (error) {
       throw new Error(getErrorMessage(error, 'Authentication request failed.'))
@@ -58,10 +72,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      const response = await authApi.post('/register', { name, email, password })
-      const registeredUser = response.data?.user ?? response.data ?? { id: email.toLowerCase(), name, email }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(registeredUser))
-      setUser(registeredUser)
+      await authApi.post('/register', { name, email, password })
     } catch (error) {
       throw new Error(getErrorMessage(error, 'Authentication request failed.'))
     }
@@ -69,12 +80,14 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(TOKEN_KEY)
     setUser(null)
+    setToken('')
   }
 
   const value = useMemo(
-    () => ({ user, isAuthenticated: Boolean(user), login, register, logout }),
-    [user],
+    () => ({ user, token, isAuthenticated: Boolean(token), login, register, logout }),
+    [token, user],
   )
 
   return createElement(AuthContext.Provider, { value }, children)

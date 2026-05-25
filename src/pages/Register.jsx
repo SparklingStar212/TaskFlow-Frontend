@@ -30,6 +30,7 @@ const Register = ({ onSwitchToLogin }) => {
         })
         helpers.resetForm()
         helpers.setStatus('')
+        onSwitchToLogin()
       } catch (error) {
         helpers.setStatus(error.message)
       }
